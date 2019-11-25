@@ -13,7 +13,7 @@
 ;; Public
 
 (defn make []
-  {:db/board (-> (board/make 10 10)
+  {:db/board (-> (board/make 26 40)
                  (board/set-source [1 1])
                  (board/set-target [4 4]))})
 

@@ -4,29 +4,36 @@
             [bs.board :as board]
             [reagent.core :as r]))
 
-(defn cell-classes [board pos]
-  [(when (board/wall? board pos) "cell--wall-animated")
-   (when (board/target? board pos) "cell--target")
-   (when (board/source? board pos) "cell--source")])
+(defn board []
+  (:db/board @state/app-db))
 
-(defn cell [board pos]
+(defn board-size []
+  (select-keys @(r/track board) [:board/width :board/height]))
+
+(defn cell-classes [pos]
+  (let [board @(r/track board)]
+    [(when (board/wall? board pos) "cell--wall-animated")
+     (when (board/target? board pos) "cell--target")
+     (when (board/source? board pos) "cell--source")]))
+
+(defn cell [pos]
   [:td.cell
    {:on-mouse-over #(state/dispatch [:event/hover-cell pos])
     :on-mouse-down #(state/dispatch [:event/start-dragging pos])
     :on-mouse-up #(state/dispatch [:event/stop-dragging pos])
-    :class (cell-classes board pos)}])
+    :class @(r/track cell-classes pos)}])
 
-(defn root [db]
-  (let [board (:db/board @db)]
+(defn root []
+  (let [{:board/keys [width height]} @(r/track board-size)]
     [:table
      [:tbody
-      (for [x (range (:board/width board))]
+      (for [x (range width)]
         [:tr {:key x}
-         (for [y (range (:board/height board))]
-           ^{:key y} [cell board [x y]])])]]))
+         (for [y (range height)]
+           ^{:key y} [cell [x y]])])]]))
 
 (defn ^:dev/after-load render! []
   (state/dispatch [:event/start])
-  (r/render [root state/app-db] (.getElementById js/document "app")))
+  (r/render [root] (.getElementById js/document "app")))
 
 (def main! render!)
