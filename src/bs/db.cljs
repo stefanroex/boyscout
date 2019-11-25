@@ -4,14 +4,16 @@
 ;; Private
 
 (defn- drag-mode [board pos]
-  (if (board/wall? board pos)
-    :drag/destroy-wall
-    :drag/make-wall))
+  (cond
+    (board/target? board pos) :drag/target
+    (board/source? board pos) :drag/source
+    (board/wall? board pos) :drag/destroy-wall
+    :else :drag/make-wall))
 
 ;; Public
 
 (defn make []
-  {:db/board (-> (board/make 8 8)
+  {:db/board (-> (board/make 10 10)
                  (board/set-source [1 1])
                  (board/set-target [4 4]))})
 
@@ -25,4 +27,6 @@
   (case drag-mode
     :drag/make-wall (update db :db/board board/make-wall pos)
     :drag/destroy-wall (update db :db/board board/destroy-wall pos)
+    :drag/source (update db :db/board board/set-source pos)
+    :drag/target (update db :db/board board/set-target pos)
     db))

@@ -5,7 +5,7 @@
             [reagent.core :as r]))
 
 (defn cell-classes [board pos]
-  [(when (board/wall? board pos) "cell--wall")
+  [(when (board/wall? board pos) "cell--wall-animated")
    (when (board/target? board pos) "cell--target")
    (when (board/source? board pos) "cell--source")])
 
@@ -13,19 +13,17 @@
   [:td.cell
    {:on-mouse-over #(state/dispatch [:event/hover-cell pos])
     :on-mouse-down #(state/dispatch [:event/start-dragging pos])
-    :on-mouse-up #(state/dispatch [:event/stop-dragging])
+    :on-mouse-up #(state/dispatch [:event/stop-dragging pos])
     :class (cell-classes board pos)}])
 
 (defn root [db]
   (let [board (:db/board @db)]
     [:table
      [:tbody
-      (for [[row cols] (group-by first (sort (board/all-coordinates board)))]
-        ^{:key row}
-        [:tr
-         (for [pos cols]
-           ^{:key pos}
-           [cell board pos])])]]))
+      (for [x (range (:board/width board))]
+        [:tr {:key x}
+         (for [y (range (:board/height board))]
+           ^{:key y} [cell board [x y]])])]]))
 
 (defn ^:dev/after-load render! []
   (state/dispatch [:event/start])
